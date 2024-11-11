@@ -1,0 +1,58 @@
+// Caso 2: Microfinanzas para Proveedores Locales (Token AGRO)
+Este contrato inteligente permitirá que los agricultores usen los tokens AGRO como garantía para préstamos o para adquirir insumos.
+solidity
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract AgroFinancing {
+
+    string public name = "AGRO";
+    string public symbol = "AGRO";
+    uint8 public decimals = 18;
+
+    mapping(address => uint256) public balances;
+    mapping(address => uint256) public loans;
+
+    uint256 public totalSupply;
+
+    // Evento para cuando se otorgan tokens
+    event TokensIssued(address indexed farmer, uint256 amount);
+    // Evento para cuando se solicita un préstamo
+    event LoanRequested(address indexed farmer, uint256 loanAmount);
+
+    // Constructor
+    constructor(uint256 _initialSupply) {
+        totalSupply = _initialSupply * 10 ** uint256(decimals);
+        balances[msg.sender] = totalSupply; // Inicializar con los tokens
+    }
+
+    // Función para emitir tokens AGRO
+    function issueTokens(address _farmer, uint256 _amount) public {
+        balances[_farmer] += _amount;
+        emit TokensIssued(_farmer, _amount);
+    }
+
+    // Función para solicitar préstamo usando tokens AGRO como garantía
+    function requestLoan(uint256 _loanAmount) public {
+        require(balances[msg.sender] >= _loanAmount, "Insufficient collateral.");
+        loans[msg.sender] += _loanAmount;
+        emit LoanRequested(msg.sender, _loanAmount);
+    }
+
+    // Función para pagar un préstamo
+    function repayLoan(uint256 _amount) public {
+        require(loans[msg.sender] >= _amount, "Loan amount exceeds.");
+        loans[msg.sender] -= _amount;
+    }
+
+    // Función para verificar el balance de tokens de un agricultor
+    function balanceOf(address _farmer) public view returns (uint256) {
+        return balances[_farmer];
+    }
+
+    // Función para verificar el préstamo de un agricultor
+    function loanBalance(address _farmer) public view returns (uint256) {
+        return loans[_farmer];
+    }
+}
