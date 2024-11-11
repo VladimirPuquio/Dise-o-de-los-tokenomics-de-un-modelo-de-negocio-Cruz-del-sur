@@ -1,0 +1,58 @@
+// Caso 1: Incentivos para el Turismo Sostenible (Token PERUTOUR)
+Este smart contract manejará la creación y el canje de tokens PERUTOUR por parte de los turistas.
+solidity
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract TourismIncentives {
+
+    string public name = "PERUTOUR";
+    string public symbol = "PT";
+    uint8 public decimals = 18;
+
+    mapping(address => uint256) public balances;
+    mapping(address => bool) public eligibleDestinations;
+
+    uint256 public totalSupply;
+
+    // Evento cuando se otorgan tokens
+    event TokensIssued(address indexed tourist, uint256 amount);
+    // Evento cuando se canjean tokens
+    event TokensRedeemed(address indexed tourist, uint256 amount);
+
+    // Constructor
+    constructor(uint256 _initialSupply) {
+        totalSupply = _initialSupply * 10 ** uint256(decimals);
+        balances[msg.sender] = totalSupply; // Inicializar con los tokens
+    }
+
+    // Función para otorgar tokens por viajes a destinos sostenibles
+    function rewardTourist(address _tourist, uint256 _amount) public {
+        require(eligibleDestinations[_tourist], "Tourist is not eligible for rewards.");
+        balances[_tourist] += _amount;
+        emit TokensIssued(_tourist, _amount);
+    }
+
+    // Función para que el turista canjee sus tokens
+    function redeemTokens(uint256 _amount) public {
+        require(balances[msg.sender] >= _amount, "Insufficient balance.");
+        balances[msg.sender] -= _amount;
+        emit TokensRedeemed(msg.sender, _amount);
+    }
+
+    // Función para registrar destinos sostenibles
+    function addEligibleDestination(address _destination) public {
+        eligibleDestinations[_destination] = true;
+    }
+
+    // Función para eliminar destinos sostenibles
+    function removeEligibleDestination(address _destination) public {
+        eligibleDestinations[_destination] = false;
+    }
+
+    // Función para verificar el balance de tokens de un turista
+    function balanceOf(address _tourist) public view returns (uint256) {
+        return balances[_tourist];
+    }
+}
