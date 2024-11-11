@@ -1,0 +1,50 @@
+// Caso 3: Incentivos Educativos y Certificaciones para Conductores (Token EDUTECH)
+Este smart contract gestionará los tokens EDUTECH, que se otorgan a los conductores como recompensa por completar cursos y certificaciones.
+solidity
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract DriverEducation {
+
+    string public name = "EDUTECH";
+    string public symbol = "ET";
+    uint8 public decimals = 18;
+
+    mapping(address => uint256) public balances;
+    mapping(address => bool) public completedCourses;
+
+    uint256 public totalSupply;
+
+    // Evento cuando se otorgan tokens
+    event TokensIssued(address indexed driver, uint256 amount);
+    // Evento cuando se completan cursos
+    event CourseCompleted(address indexed driver, string courseName);
+
+    // Constructor
+    constructor(uint256 _initialSupply) {
+        totalSupply = _initialSupply * 10 ** uint256(decimals);
+        balances[msg.sender] = totalSupply; // Inicializar con los tokens
+    }
+
+    // Función para completar un curso y otorgar tokens como recompensa
+    function completeCourse(address _driver, string memory _courseName) public {
+        require(!completedCourses[_driver], "Course already completed.");
+        completedCourses[_driver] = true;
+        uint256 rewardAmount = 10 * 10 ** uint256(decimals); // Definir recompensa
+        balances[_driver] += rewardAmount;
+        emit TokensIssued(_driver, rewardAmount);
+        emit CourseCompleted(_driver, _courseName);
+    }
+
+    // Función para intercambiar tokens por descuentos o servicios
+    function redeemTokens(uint256 _amount) public {
+        require(balances[msg.sender] >= _amount, "Insufficient balance.");
+        balances[msg.sender] -= _amount;
+    }
+
+    // Función para verificar el balance de tokens de un conductor
+    function balanceOf(address _driver) public view returns (uint256) {
+        return balances[_driver];
+    }
+}
